@@ -4,7 +4,7 @@ service cloud.firestore {
     // Chỉ 2 email này được đọc/ghi. Sửa lại cho trùng với config.js
     function isMember() {
       return request.auth != null
-        && request.auth.token.email in ['nguoi1@example.com', 'nguoi2@example.com'];
+        && request.auth.token.email in ['lephufptu@gmail.com', 'sinhvienlehuyentrang166@gmail.com'];
     }
 
     function validTx(d) {

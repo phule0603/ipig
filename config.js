@@ -10,8 +10,8 @@ export const firebaseConfig = {
 
 // 2) Tên hiển thị cho 2 người dùng (email phải trùng với tài khoản tạo trong Firebase Auth)
 export const USERS = {
-  "nguoi1@example.com": "Anh",
-  "nguoi2@example.com": "Em",
+  "lephufptu@gmail.com": "Phú",
+  "sinhvienlehuyentrang166@gmail.com": "Trang",
 };
 
 export const CATEGORIES = {
