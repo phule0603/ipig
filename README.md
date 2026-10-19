@@ -45,9 +45,15 @@ Developer, không phải cài lại sau 7 ngày.
 
 ## Cách dùng
 
-- Nút **+** để thêm khoản thu/chi. Bấm vào 1 dòng để sửa hoặc xóa.
-- Mũi tên ‹ › để chuyển tháng; trên cùng là tổng thu, chi, còn lại và tách theo từng người.
-- Lọc theo người hoặc chỉ thu / chỉ chi.
+- **Sổ**: tổng thu / chi / còn lại của tháng, danh sách theo ngày. Tìm kiếm theo ghi chú (gõ không dấu cũng được),
+  lọc theo người hoặc chỉ thu / chỉ chi. Bấm vào 1 dòng để sửa hoặc xóa.
+- **+**: nhập số tiền (nút `+000`, 20k, 50k… để nhập nhanh), chọn danh mục bằng biểu tượng, chọn Hôm nay / Hôm qua.
+- **Thống kê**: tổng chi so với tháng trước, trung bình mỗi ngày, chi theo danh mục, mỗi người thu/chi bao nhiêu,
+  biểu đồ 6 tháng (bấm vào cột để xem số).
+- Đổi tháng: mũi tên ‹ ›, vuốt ngang, hoặc bấm tên tháng để về tháng hiện tại.
+- Bấm avatar góc phải: xuất dữ liệu ra file CSV (mở bằng Excel / Numbers / Google Sheets), đăng xuất.
+- Mở được cả khi mất mạng; khoản nhập lúc offline tự đồng bộ khi có mạng.
+- Danh mục và biểu tượng sửa trong `config.js`.
 
 ## Chạy thử trên máy tính
 

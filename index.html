@@ -7,127 +7,367 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Thu Chi">
-<meta name="theme-color" content="#0f766e">
+<meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
 <title>Thu Chi</title>
 <style>
   :root {
-    --bg: #f4f5f7; --card: #fff; --text: #111827; --muted: #6b7280; --line: #e5e7eb;
-    --primary: #0f766e; --income: #15803d; --expense: #dc2626;
+    --bg: #f2f2f7; --card: #ffffff; --card2: #f7f7fa; --text: #1c1c1e; --muted: #8e8e93; --line: #e5e5ea;
+    --primary: #0f766e; --primary-soft: #ccfbf1;
+    /* Thu = xanh dương, Chi = cam: phân biệt được cả với người mù màu đỏ–xanh lá */
+    --income: #2563eb; --expense: #ea580c;            /* cột biểu đồ */
+    --income-text: #1d4ed8; --expense-text: #c2410c;  /* chữ số tiền */
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.05);
   }
   @media (prefers-color-scheme: dark) {
-    :root { --bg: #0b0f14; --card: #161b22; --text: #e6edf3; --muted: #8b949e; --line: #2a313c;
-            --primary: #2dd4bf; --income: #4ade80; --expense: #f87171; }
+    :root {
+      --bg: #000000; --card: #1c1c1e; --card2: #2c2c2e; --text: #f2f2f7; --muted: #8e8e93; --line: #38383a;
+      --primary: #2dd4bf; --primary-soft: #134e4a;
+      --income: #3b82f6; --expense: #ea580c;
+      --income-text: #60a5fa; --expense-text: #fb923c;
+      --shadow: none;
+    }
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  body { margin: 0; font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text);
-         padding: env(safe-area-inset-top) 16px calc(env(safe-area-inset-bottom) + 90px); }
-  h1 { font-size: 22px; margin: 16px 0 8px; display: flex; justify-content: space-between; align-items: center; }
-  .card { background: var(--card); border-radius: 14px; padding: 14px; margin: 12px 0; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); }
+  body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; font-size: 16px;
+         -webkit-font-smoothing: antialiased; overscroll-behavior-y: none; }
+  button, input, select { font: inherit; color: inherit; }
+  button { cursor: pointer; border: 0; background: none; padding: 0; }
+  input, select { font-size: 16px; } /* tránh iOS tự phóng to */
   .hidden { display: none !important; }
-  input, select, textarea, button { font: inherit; font-size: 16px; color: var(--text); }
-  input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
-  label { display: block; font-size: 13px; color: var(--muted); margin: 10px 0 4px; }
-  button { border: 0; border-radius: 10px; padding: 12px 16px; background: var(--primary); color: #fff; font-weight: 600; }
-  button.ghost { background: transparent; color: var(--primary); padding: 6px 8px; }
-  button.danger { background: var(--expense); }
-  .row { display: flex; gap: 8px; align-items: center; }
-  .row > * { flex: 1; }
-  .month { display: flex; align-items: center; justify-content: space-between; }
-  .month strong { font-size: 18px; }
-  .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; text-align: center; }
-  .stats small { color: var(--muted); display: block; font-size: 12px; }
-  .stats b { font-size: 15px; }
-  .inc { color: var(--income); } .exp { color: var(--expense); }
-  .who { font-size: 13px; color: var(--muted); margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
-  .day { font-size: 13px; color: var(--muted); margin: 16px 4px 4px; }
-  .tx { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--line); }
-  .tx:last-child { border-bottom: 0; }
-  .tx .meta { font-size: 12px; color: var(--muted); }
-  .tx b { white-space: nowrap; margin-left: 8px; }
-  .fab { position: fixed; right: 20px; bottom: calc(env(safe-area-inset-bottom) + 20px); width: 60px; height: 60px;
-         border-radius: 30px; font-size: 32px; padding: 0; box-shadow: 0 4px 14px rgba(0,0,0,.25); }
-  .sheet { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: flex; align-items: flex-end; z-index: 10; }
-  .sheet .card { width: 100%; margin: 0; border-radius: 18px 18px 0 0; padding-bottom: calc(env(safe-area-inset-bottom) + 16px); max-height: 92vh; overflow: auto; }
-  .seg { display: flex; background: var(--bg); border-radius: 10px; padding: 3px; }
-  .seg button { flex: 1; background: transparent; color: var(--muted); padding: 9px; }
-  .seg button.on.exp-on { background: var(--expense); color: #fff; }
-  .seg button.on.inc-on { background: var(--income); color: #fff; }
-  .empty { text-align: center; color: var(--muted); padding: 24px 0; }
-  .err { color: var(--expense); font-size: 14px; margin-top: 8px; }
+  .num { font-variant-numeric: tabular-nums; }
+  .inc { color: var(--income-text); } .exp { color: var(--expense-text); }
+
+  /* ---------- Đăng nhập ---------- */
+  #login { min-height: 100dvh; display: flex; flex-direction: column; justify-content: center; padding: 24px 20px; }
+  #login .logo { width: 72px; height: 72px; border-radius: 18px; margin: 0 auto 12px; display: block; }
+  #login h1 { text-align: center; margin: 0 0 4px; font-size: 28px; }
+  #login p { text-align: center; color: var(--muted); margin: 0 0 24px; }
+
+  /* ---------- Khung chính ---------- */
+  .top { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--bg) 85%, transparent);
+         backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px);
+         padding: calc(env(safe-area-inset-top) + 8px) 16px 8px; display: flex; align-items: center; gap: 8px; }
+  .month-switch { flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; }
+  .month-switch button.arrow { width: 36px; height: 36px; border-radius: 18px; font-size: 22px; color: var(--primary); }
+  .month-switch button.arrow:active { background: var(--card2); }
+  #monthLabel { font-weight: 700; font-size: 17px; min-width: 130px; text-align: center; }
+  .avatar { width: 36px; height: 36px; border-radius: 18px; background: var(--primary); color: #fff;
+            font-weight: 700; display: grid; place-items: center; font-size: 15px; flex: none; }
+  .avatar.sm { width: 22px; height: 22px; font-size: 11px; }
+  .top .spacer { width: 36px; flex: none; }
+
+  main { padding: 4px 16px calc(env(safe-area-inset-bottom) + 96px); max-width: 640px; margin: 0 auto; }
+  .card { background: var(--card); border-radius: 16px; padding: 16px; margin: 12px 0; box-shadow: var(--shadow); }
+  .card h3 { margin: 0 0 12px; font-size: 15px; font-weight: 600; }
+  .muted { color: var(--muted); }
+  .small { font-size: 13px; }
+
+  /* Tổng quan tháng */
+  .hero small { color: var(--muted); font-size: 13px; }
+  .hero .big { font-size: 34px; font-weight: 700; letter-spacing: -0.5px; margin: 2px 0 14px; }
+  .hero .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .hero .pair > div { background: var(--card2); border-radius: 12px; padding: 10px 12px; }
+  .hero .pair b { display: block; font-size: 17px; margin-top: 2px; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 4px; margin-right: 6px; vertical-align: 1px; }
+  .dot.inc { background: var(--income); } .dot.exp { background: var(--expense); }
+
+  /* Tìm kiếm & bộ lọc */
+  .search { position: relative; margin: 12px 0 8px; }
+  .search input { width: 100%; padding: 10px 12px 10px 36px; border: 0; border-radius: 12px; background: var(--card); box-shadow: var(--shadow); }
+  .search::before { content: "⌕"; position: absolute; left: 12px; top: 50%; transform: translateY(-52%); color: var(--muted); font-size: 18px; }
+  .chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px 0; }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip { flex: none; padding: 7px 12px; border-radius: 999px; background: var(--card); font-size: 14px; color: var(--text);
+          box-shadow: var(--shadow); white-space: nowrap; }
+  .chip.on { background: var(--primary); color: #fff; }
+  .chips .sep { flex: none; width: 1px; background: var(--line); margin: 4px 2px; }
+
+  /* Danh sách */
+  .day { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin: 18px 4px 6px; }
+  .group { background: var(--card); border-radius: 16px; box-shadow: var(--shadow); overflow: hidden; }
+  .tx { display: flex; align-items: center; gap: 12px; padding: 11px 14px; width: 100%; text-align: left; position: relative; }
+  .tx:active { background: var(--card2); }
+  .tx + .tx::before { content: ""; position: absolute; top: 0; left: 64px; right: 0; border-top: 1px solid var(--line); }
+  .icon { width: 38px; height: 38px; border-radius: 12px; background: var(--card2); display: grid; place-items: center; font-size: 20px; flex: none; }
+  .tx .body { flex: 1; min-width: 0; }
+  .tx .title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tx .meta { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 5px; margin-top: 2px;
+              white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tx .amt { font-weight: 600; white-space: nowrap; }
+  .empty { text-align: center; color: var(--muted); padding: 40px 16px; }
+  .empty .em { font-size: 40px; display: block; margin-bottom: 8px; }
+
+  /* Thanh tab dưới */
+  .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; display: flex; align-items: flex-start; justify-content: space-around;
+            padding: 6px 24px calc(env(safe-area-inset-bottom) + 6px); background: color-mix(in srgb, var(--card) 88%, transparent);
+            backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); border-top: 1px solid var(--line); }
+  .tabbar .tab { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; color: var(--muted); padding: 4px 16px; }
+  .tabbar .tab span { font-size: 22px; line-height: 26px; filter: grayscale(1); opacity: .6; }
+  .tabbar .tab.on { color: var(--primary); }
+  .tabbar .tab.on span { filter: none; opacity: 1; }
+  .tabbar .add { width: 56px; height: 56px; border-radius: 28px; background: var(--primary); color: #fff; font-size: 32px; line-height: 1;
+                 margin-top: -22px; box-shadow: 0 6px 18px rgba(15,118,110,.35); display: grid; place-items: center; }
+  .tabbar .add:active { transform: scale(.94); }
+
+  /* ---------- Bảng trượt (sheet) ---------- */
+  .sheet { position: fixed; inset: 0; z-index: 20; display: flex; align-items: flex-end; justify-content: center;
+           background: rgba(0,0,0,0); transition: background .25s; pointer-events: none; }
+  .sheet:not(.open) { visibility: hidden; transition: background .25s, visibility 0s .3s; }
+  .sheet.open { background: rgba(0,0,0,.4); pointer-events: auto; }
+  .sheet .panel { width: 100%; max-width: 640px; background: var(--bg); border-radius: 20px 20px 0 0; max-height: 94dvh; overflow-y: auto;
+                  padding: 8px 16px calc(env(safe-area-inset-bottom) + 16px); transform: translateY(100%); transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+  .sheet.open .panel { transform: none; }
+  .grabber { width: 36px; height: 5px; border-radius: 3px; background: var(--line); margin: 0 auto 8px; }
+  .sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .sheet-head strong { font-size: 17px; }
+  .link { color: var(--primary); font-size: 16px; padding: 6px 4px; }
+
+  .seg { display: flex; background: var(--card2); border-radius: 10px; padding: 2px; }
+  .seg button { flex: 1; padding: 8px; border-radius: 8px; font-size: 15px; font-weight: 600; color: var(--muted); }
+  .seg button.on { background: var(--card); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  .seg button.on[data-type="expense"] { color: var(--expense-text); }
+  .seg button.on[data-type="income"] { color: var(--income-text); }
+
+  .amount-box { background: var(--card); border-radius: 16px; padding: 14px 16px 10px; margin: 12px 0; box-shadow: var(--shadow); }
+  .amount-box label { font-size: 13px; color: var(--muted); }
+  .amount-row { display: flex; align-items: baseline; gap: 4px; }
+  #amount { flex: 1; min-width: 0; border: 0; background: none; outline: none; font-size: 36px; font-weight: 700; padding: 2px 0;
+            font-variant-numeric: tabular-nums; }
+  .amount-row .cur { font-size: 24px; font-weight: 600; color: var(--muted); }
+  #amountWords { font-size: 13px; color: var(--muted); min-height: 18px; }
+  .quick { display: flex; gap: 6px; margin-top: 8px; overflow-x: auto; scrollbar-width: none; }
+  .quick button { flex: none; padding: 6px 10px; border-radius: 8px; background: var(--card2); font-size: 14px; font-weight: 500; }
+  .quick button:active { background: var(--primary-soft); }
+
+  .cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .cat { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 2px 8px; border-radius: 12px;
+         background: var(--card); font-size: 12px; border: 2px solid transparent; box-shadow: var(--shadow); }
+  .cat span { font-size: 24px; line-height: 28px; }
+  .cat.on { border-color: var(--primary); background: var(--primary-soft); }
+  .field { background: var(--card); border-radius: 14px; margin: 12px 0; box-shadow: var(--shadow); overflow: hidden; }
+  .field .line { display: flex; align-items: center; gap: 10px; padding: 4px 14px; min-height: 48px; }
+  .field .line + .line { border-top: 1px solid var(--line); }
+  .field .line > span:first-child { width: 72px; color: var(--muted); font-size: 15px; flex: none; }
+  .field input { flex: 1; min-width: 0; border: 0; background: none; outline: none; padding: 10px 0; }
+  .field input[type="date"] { -webkit-appearance: none; appearance: none; text-align: right; }
+  .day-chips { display: flex; gap: 6px; }
+  .day-chips button { padding: 5px 9px; border-radius: 8px; background: var(--card2); font-size: 13px; }
+  .day-chips button.on { background: var(--primary); color: #fff; }
+
+  .btn { display: block; width: 100%; padding: 14px; border-radius: 14px; background: var(--primary); color: #fff; font-weight: 600; font-size: 17px; }
+  .btn:active { opacity: .85; }
+  .btn.secondary { background: var(--card); color: var(--text); box-shadow: var(--shadow); }
+  .btn.danger-text { background: var(--card); color: #dc2626; box-shadow: var(--shadow); }
+  .btn:disabled { opacity: .5; }
+  .row-btns { display: flex; gap: 8px; margin-top: 16px; }
+  .row-btns .btn.danger-text { flex: 0 0 30%; }
+  .err { color: #dc2626; font-size: 14px; margin-top: 8px; text-align: center; }
+  .stamp { text-align: center; font-size: 12px; color: var(--muted); margin-top: 12px; }
+
+  /* Form đăng nhập */
+  .field.login .line > span:first-child { width: 86px; }
+
+  /* ---------- Thống kê ---------- */
+  .kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .kpi { background: var(--card); border-radius: 16px; padding: 14px; box-shadow: var(--shadow); }
+  .kpi small { color: var(--muted); font-size: 13px; }
+  .kpi b { display: block; font-size: 20px; margin: 2px 0; }
+  .kpi .delta { font-size: 12px; color: var(--muted); }
+  .bars { display: flex; flex-direction: column; gap: 12px; }
+  .bar-row .lbl { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 5px; }
+  .bar-row .lbl .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar-row .lbl .val { font-weight: 600; }
+  .bar-row .lbl .pct { color: var(--muted); width: 38px; text-align: right; font-size: 13px; }
+  .track { height: 8px; border-radius: 4px; background: var(--card2); overflow: hidden; }
+  .fill { height: 100%; border-radius: 4px; min-width: 4px; transition: width .4s; }
+  .fill.exp { background: var(--expense); } .fill.inc { background: var(--income); }
+
+  .trend { display: flex; align-items: flex-end; gap: 6px; height: 150px; border-bottom: 1px solid var(--line); padding: 0 2px; position: relative; }
+  .trend .m { flex: 1; height: 100%; display: flex; align-items: flex-end; justify-content: center; gap: 2px; border-radius: 8px; padding-top: 6px; }
+  .trend .m.sel { background: var(--card2); }
+  .trend .b { width: 40%; max-width: 18px; border-radius: 4px 4px 0 0; min-height: 2px; }
+  .trend .b.inc { background: var(--income); } .trend .b.exp { background: var(--expense); }
+  .trend-x { display: flex; gap: 6px; padding: 6px 2px 0; }
+  .trend-x span { flex: 1; text-align: center; font-size: 12px; color: var(--muted); }
+  .trend-x span.sel { color: var(--text); font-weight: 600; }
+  .legend { display: flex; gap: 14px; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+  .trend-tip { margin-top: 10px; font-size: 14px; background: var(--card2); border-radius: 10px; padding: 8px 12px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+
+  .menu { background: var(--card); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); margin: 12px 0; }
+  .menu button { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px; text-align: left; }
+  .menu button + button { border-top: 1px solid var(--line); }
+  .menu button:active { background: var(--card2); }
+  .menu .ic { font-size: 20px; width: 26px; text-align: center; }
+  .menu .danger { color: #dc2626; }
+
+  /* Thông báo nhỏ */
+  #toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 92px); z-index: 30;
+           transform: translate(-50%, 20px); opacity: 0; transition: all .25s; pointer-events: none;
+           background: rgba(28,28,30,.92); color: #fff; padding: 10px 16px; border-radius: 999px; font-size: 14px; white-space: nowrap; }
+  #toast.show { opacity: 1; transform: translate(-50%, 0); }
+  #offline { position: fixed; top: env(safe-area-inset-top); left: 50%; transform: translateX(-50%); z-index: 7; margin-top: 52px;
+             background: #78350f; color: #fff; font-size: 12px; padding: 4px 10px; border-radius: 999px; }
 </style>
 </head>
 <body>
 
 <!-- Đăng nhập -->
 <section id="login" class="hidden">
+  <img class="logo" src="icon-180.png" alt="">
   <h1>Thu Chi</h1>
-  <form class="card" id="loginForm">
-    <label>Email</label>
-    <input id="email" type="email" autocomplete="username" required>
-    <label>Mật khẩu</label>
-    <input id="password" type="password" autocomplete="current-password" required>
-    <div style="height:14px"></div>
-    <button type="submit" style="width:100%">Đăng nhập</button>
+  <p>Sổ thu chi chung của hai bạn</p>
+  <form id="loginForm">
+    <div class="field login">
+      <label class="line"><span>Email</span><input id="email" type="email" autocomplete="username" placeholder="ten@gmail.com" required></label>
+      <label class="line"><span>Mật khẩu</span><input id="password" type="password" autocomplete="current-password" placeholder="••••••" required></label>
+    </div>
+    <button type="submit" class="btn" id="loginBtn">Đăng nhập</button>
     <div id="loginErr" class="err"></div>
   </form>
 </section>
 
-<!-- Màn hình chính -->
-<section id="main" class="hidden">
-  <h1><span>Thu Chi</span><button class="ghost" id="logout">Đăng xuất</button></h1>
-
-  <div class="card">
-    <div class="month">
-      <button class="ghost" id="prev">‹</button>
-      <strong id="monthLabel"></strong>
-      <button class="ghost" id="next">›</button>
+<!-- Ứng dụng -->
+<div id="app" class="hidden">
+  <header class="top">
+    <div class="spacer"></div>
+    <div class="month-switch">
+      <button class="arrow" id="prev" aria-label="Tháng trước">‹</button>
+      <button id="monthLabel"></button>
+      <button class="arrow" id="next" aria-label="Tháng sau">›</button>
     </div>
-    <div class="stats" style="margin-top:10px">
-      <div><small>Thu</small><b class="inc" id="sumInc">0</b></div>
-      <div><small>Chi</small><b class="exp" id="sumExp">0</b></div>
-      <div><small>Còn lại</small><b id="sumBal">0</b></div>
-    </div>
-    <div class="who" id="byUser"></div>
-  </div>
+    <button class="avatar" id="meBtn" aria-label="Tài khoản"></button>
+  </header>
+  <div id="offline" class="hidden">Đang offline · dữ liệu sẽ tự đồng bộ</div>
 
-  <div class="row">
-    <select id="filterUser"><option value="">Tất cả mọi người</option></select>
-    <select id="filterType"><option value="">Thu & chi</option><option value="expense">Chỉ chi</option><option value="income">Chỉ thu</option></select>
-  </div>
+  <main>
+    <!-- Tab Sổ -->
+    <section id="tab-list">
+      <div class="card hero">
+        <small>Còn lại trong tháng</small>
+        <div class="big num" id="sumBal">0đ</div>
+        <div class="pair">
+          <div><small><span class="dot inc"></span>Thu</small><b class="num inc" id="sumInc">0đ</b></div>
+          <div><small><span class="dot exp"></span>Chi</small><b class="num exp" id="sumExp">0đ</b></div>
+        </div>
+      </div>
 
-  <div id="list"></div>
-  <button class="fab" id="addBtn" aria-label="Thêm">+</button>
-</section>
+      <div class="search"><input id="q" type="search" placeholder="Tìm theo ghi chú, danh mục" autocomplete="off"></div>
+      <div class="chips" id="filters"></div>
+      <div id="list"></div>
+    </section>
 
-<!-- Form thêm / sửa -->
-<div class="sheet hidden" id="sheet">
-  <form class="card" id="txForm">
-    <div class="row" style="margin-bottom:6px">
+    <!-- Tab Thống kê -->
+    <section id="tab-stats" class="hidden">
+      <div class="kpi-row" style="margin-top:12px">
+        <div class="kpi"><small>Tổng chi</small><b class="num exp" id="kExp">0đ</b><div class="delta" id="kExpDelta"></div></div>
+        <div class="kpi"><small>Trung bình / ngày</small><b class="num" id="kAvg">0đ</b><div class="delta" id="kAvgNote"></div></div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <h3 style="margin:0">Theo danh mục</h3>
+          <div class="seg" id="catSeg" style="width:140px">
+            <button data-type="expense" class="on">Chi</button><button data-type="income">Thu</button>
+          </div>
+        </div>
+        <div class="bars" id="catBars"></div>
+      </div>
+
+      <div class="card">
+        <h3>Mỗi người</h3>
+        <div class="bars" id="userBars"></div>
+      </div>
+
+      <div class="card">
+        <h3>6 tháng gần nhất</h3>
+        <div class="legend"><span><span class="dot inc"></span>Thu</span><span><span class="dot exp"></span>Chi</span></div>
+        <div class="trend" id="trend"></div>
+        <div class="trend-x" id="trendX"></div>
+        <div class="trend-tip num" id="trendTip"></div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabbar">
+    <button class="tab on" data-tab="list"><span>📒</span>Sổ</button>
+    <button class="add" id="addBtn" aria-label="Thêm giao dịch">+</button>
+    <button class="tab" data-tab="stats"><span>📊</span>Thống kê</button>
+  </nav>
+</div>
+
+<!-- Thêm / sửa giao dịch -->
+<div class="sheet" id="txSheet">
+  <form class="panel" id="txForm" autocomplete="off">
+    <div class="grabber"></div>
+    <div class="sheet-head">
+      <button type="button" class="link" data-close>Hủy</button>
       <strong id="formTitle">Thêm giao dịch</strong>
-      <button type="button" class="ghost" id="cancel" style="flex:0">Đóng</button>
+      <button type="submit" class="link" style="font-weight:600">Lưu</button>
     </div>
-    <div class="seg">
-      <button type="button" data-type="expense">Chi</button>
-      <button type="button" data-type="income">Thu</button>
+    <div class="seg" id="typeSeg">
+      <button type="button" data-type="expense">Chi tiền</button>
+      <button type="button" data-type="income">Thu tiền</button>
     </div>
-    <label>Số tiền (đ)</label>
-    <input id="amount" inputmode="numeric" placeholder="0" required>
-    <label>Danh mục</label>
-    <select id="category"></select>
-    <label>Ngày</label>
-    <input id="date" type="date" required>
-    <label>Ghi chú</label>
-    <input id="note" placeholder="Không bắt buộc">
-    <div style="height:14px"></div>
-    <div class="row">
-      <button type="button" class="danger hidden" id="delete">Xóa</button>
-      <button type="submit">Lưu</button>
+
+    <div class="amount-box">
+      <label for="amount">Số tiền</label>
+      <div class="amount-row"><input id="amount" inputmode="numeric" placeholder="0" enterkeyhint="done"><span class="cur">đ</span></div>
+      <div id="amountWords"></div>
+      <div class="quick" id="quick">
+        <button type="button" data-add="000">+000</button>
+        <button type="button" data-set="20000">20k</button>
+        <button type="button" data-set="50000">50k</button>
+        <button type="button" data-set="100000">100k</button>
+        <button type="button" data-set="200000">200k</button>
+        <button type="button" data-set="500000">500k</button>
+        <button type="button" data-set="1000000">1tr</button>
+      </div>
+    </div>
+
+    <div class="cat-grid" id="catGrid"></div>
+
+    <div class="field">
+      <div class="line">
+        <div class="day-chips"><button type="button" data-day="0">Hôm nay</button><button type="button" data-day="-1">Hôm qua</button></div>
+        <input id="date" type="date" required aria-label="Ngày">
+      </div>
+      <label class="line"><span>Ghi chú</span><input id="note" placeholder="Không bắt buộc" maxlength="120" enterkeyhint="done"></label>
+    </div>
+
+    <div class="row-btns">
+      <button type="button" class="btn danger-text hidden" id="delete">Xóa</button>
+      <button type="submit" class="btn" id="saveBtn">Lưu</button>
     </div>
     <div id="formErr" class="err"></div>
+    <div class="stamp" id="stamp"></div>
   </form>
 </div>
+
+<!-- Tài khoản -->
+<div class="sheet" id="meSheet">
+  <div class="panel">
+    <div class="grabber"></div>
+    <div class="sheet-head"><span style="width:40px"></span><strong>Tài khoản</strong><button class="link" data-close>Xong</button></div>
+    <div class="card" style="display:flex;align-items:center;gap:12px">
+      <div class="avatar" id="meAvatar" style="width:48px;height:48px;font-size:20px;border-radius:24px"></div>
+      <div><b id="meName"></b><div class="muted small" id="meEmail"></div></div>
+    </div>
+    <div class="menu">
+      <button id="exportMonth"><span class="ic">📄</span><span>Xuất Excel (CSV) tháng đang xem</span></button>
+      <button id="exportAll"><span class="ic">🗂️</span><span>Xuất Excel (CSV) 6 tháng</span></button>
+    </div>
+    <div class="menu">
+      <button id="logout"><span class="ic">↩︎</span><span class="danger">Đăng xuất</span></button>
+    </div>
+    <div class="stamp">Thu Chi · dữ liệu đồng bộ qua Firebase</div>
+  </div>
+</div>
+
+<div id="toast"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -138,138 +378,335 @@ import { initializeFirestore, persistentLocalCache, collection, query, where, or
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, USERS, CATEGORIES } from "./config.js";
 
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 await setPersistence(auth, browserLocalPersistence);
 const db = initializeFirestore(app, { localCache: persistentLocalCache() });
 const txCol = collection(db, "transactions");
 
+// ---------- Tiện ích ----------
 const $ = (id) => document.getElementById(id);
 const fmt = (n) => n.toLocaleString("vi-VN") + "đ";
+const fmtShort = (n) => n >= 1e9 ? +(n / 1e9).toFixed(1) + "tỷ" : n >= 1e6 ? +(n / 1e6).toFixed(1) + "tr" : n >= 1e3 ? Math.round(n / 1e3) + "k" : String(n);
 const pad = (n) => String(n).padStart(2, "0");
 const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-const nameOf = (email) => USERS[email] || email;
+const ym = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+const nameOf = (email) => USERS[email] || (email || "").split("@")[0];
+const initial = (email) => nameOf(email).charAt(0).toUpperCase();
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const plain = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase();
+const WEEKDAYS = ["Chủ nhật", "Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy"];
+const iconOf = (type, cat) => (CATEGORIES[type] || []).find(([n]) => n === cat)?.[1] || "📌";
+const sum = (arr, t) => arr.reduce((s, x) => s + (x.type === t ? x.amount : 0), 0);
 
-let cur = new Date(); cur.setDate(1);
-let unsub = null, items = [], editing = null, formType = "expense";
+let toastTimer;
+function toast(msg) {
+  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 1800);
+}
 
-for (const [email, name] of Object.entries(USERS)) $("filterUser").add(new Option(name, email));
+function openSheet(id) { $(id).querySelector(".panel").scrollTop = 0; $(id).classList.add("open"); }
+function closeSheet(id) { $(id).classList.remove("open"); document.activeElement?.blur(); }
+for (const s of document.querySelectorAll(".sheet")) {
+  s.addEventListener("click", (e) => { if (e.target === s || e.target.closest("[data-close]")) closeSheet(s.id); });
+  // Vuốt xuống ở thanh kéo để đóng
+  let y0 = null;
+  s.querySelector(".panel").addEventListener("touchstart", (e) => { y0 = e.currentTarget.scrollTop <= 0 ? e.touches[0].clientY : null; }, { passive: true });
+  s.querySelector(".panel").addEventListener("touchend", (e) => { if (y0 !== null && e.changedTouches[0].clientY - y0 > 90) closeSheet(s.id); y0 = null; });
+}
 
-// ---- Đăng nhập ----
+const updateOnline = () => $("offline").classList.toggle("hidden", navigator.onLine);
+addEventListener("online", updateOnline); addEventListener("offline", updateOnline); updateOnline();
+
+// ---------- Trạng thái ----------
+let cur = new Date(); cur.setDate(1); cur.setHours(0, 0, 0, 0);
+let unsub = null, all = [], month = [], editing = null, formType = "expense", formCat = null;
+const filter = { user: "", type: "", q: "" };
+let tab = "list", catType = "expense", trendSel = null;
+
+// ---------- Đăng nhập ----------
 onAuthStateChanged(auth, (user) => {
   $("login").classList.toggle("hidden", !!user);
-  $("main").classList.toggle("hidden", !user);
-  if (user) subscribe(); else if (unsub) { unsub(); unsub = null; }
+  $("app").classList.toggle("hidden", !user);
+  if (user) {
+    $("meBtn").textContent = $("meAvatar").textContent = initial(user.email);
+    $("meName").textContent = nameOf(user.email);
+    $("meEmail").textContent = user.email;
+    subscribe();
+  } else if (unsub) { unsub(); unsub = null; }
 });
 
 $("loginForm").onsubmit = async (e) => {
-  e.preventDefault(); $("loginErr").textContent = "";
+  e.preventDefault(); $("loginErr").textContent = ""; $("loginBtn").disabled = true;
   try { await signInWithEmailAndPassword(auth, $("email").value.trim(), $("password").value); }
-  catch { $("loginErr").textContent = "Sai email hoặc mật khẩu."; }
+  catch (err) {
+    $("loginErr").textContent = err.code === "auth/network-request-failed" ? "Không có mạng, thử lại sau." : "Sai email hoặc mật khẩu.";
+  }
+  $("loginBtn").disabled = false;
 };
-$("logout").onclick = () => signOut(auth);
+$("meBtn").onclick = () => openSheet("meSheet");
+$("logout").onclick = () => { closeSheet("meSheet"); signOut(auth); };
 
-// ---- Dữ liệu theo tháng (đồng bộ realtime giữa 2 máy) ----
+// ---------- Dữ liệu: nghe 6 tháng tính đến tháng đang xem ----------
 function subscribe() {
   if (unsub) unsub();
-  const start = ymd(cur);
+  const start = ymd(new Date(cur.getFullYear(), cur.getMonth() - 5, 1));
   const end = ymd(new Date(cur.getFullYear(), cur.getMonth() + 1, 0));
-  $("monthLabel").textContent = `Tháng ${cur.getMonth() + 1}/${cur.getFullYear()}`;
+  const isThisYear = cur.getFullYear() === new Date().getFullYear();
+  $("monthLabel").textContent = `Tháng ${cur.getMonth() + 1}` + (isThisYear ? "" : `/${cur.getFullYear()}`);
+  trendSel = null;
   const q = query(txCol, where("date", ">=", start), where("date", "<=", end), orderBy("date", "desc"));
   unsub = onSnapshot(q, (snap) => {
-    items = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    all = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => b.date.localeCompare(a.date) || (b.createdAt?.seconds ?? 9e9) - (a.createdAt?.seconds ?? 9e9));
     render();
-  }, (err) => { $("list").innerHTML = `<div class="card err">Lỗi tải dữ liệu: ${err.code}</div>`; });
+  }, (err) => {
+    $("list").innerHTML = `<div class="card err">Không tải được dữ liệu (${esc(err.code)}).<br>Kiểm tra lại Firestore Rules và email đăng nhập.</div>`;
+  });
 }
-$("prev").onclick = () => { cur.setMonth(cur.getMonth() - 1); subscribe(); };
-$("next").onclick = () => { cur.setMonth(cur.getMonth() + 1); subscribe(); };
-$("filterUser").onchange = $("filterType").onchange = () => render();
+const shiftMonth = (n) => { cur = new Date(cur.getFullYear(), cur.getMonth() + n, 1); subscribe(); };
+$("prev").onclick = () => shiftMonth(-1);
+$("next").onclick = () => shiftMonth(1);
+$("monthLabel").onclick = () => { const now = new Date(); if (ym(now) !== ym(cur)) { cur = new Date(now.getFullYear(), now.getMonth(), 1); subscribe(); } };
+
+// Vuốt ngang để đổi tháng
+let sx = null, sy = null;
+document.querySelector("main").addEventListener("touchstart", (e) => {
+  if (e.target.closest(".chips")) { sx = null; return; } // đang cuộn ngang bộ lọc
+  sx = e.touches[0].clientX; sy = e.touches[0].clientY;
+}, { passive: true });
+document.querySelector("main").addEventListener("touchend", (e) => {
+  if (sx === null) return;
+  const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+  if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 2) shiftMonth(dx < 0 ? 1 : -1);
+  sx = null;
+});
 
 function render() {
-  const sum = (arr, t) => arr.filter((x) => x.type === t).reduce((s, x) => s + x.amount, 0);
-  const inc = sum(items, "income"), exp = sum(items, "expense");
+  month = all.filter((x) => x.date.startsWith(ym(cur)));
+  renderSummary();
+  if (tab === "list") renderList(); else renderStats();
+}
+
+// ---------- Tab Sổ ----------
+function renderSummary() {
+  const inc = sum(month, "income"), exp = sum(month, "expense");
   $("sumInc").textContent = fmt(inc);
   $("sumExp").textContent = fmt(exp);
-  $("sumBal").textContent = fmt(inc - exp);
-  $("byUser").innerHTML = Object.entries(USERS).map(([email, name]) => {
-    const mine = items.filter((x) => x.createdBy === email);
-    return `${name}: thu <span class="inc">${fmt(sum(mine, "income"))}</span> · chi <span class="exp">${fmt(sum(mine, "expense"))}</span>`;
-  }).join("<br>");
+  $("sumBal").textContent = (inc - exp < 0 ? "−" : "") + fmt(Math.abs(inc - exp));
+}
 
-  const fu = $("filterUser").value, ft = $("filterType").value;
-  const shown = items.filter((x) => (!fu || x.createdBy === fu) && (!ft || x.type === ft));
-  if (!shown.length) { $("list").innerHTML = `<div class="card empty">Chưa có giao dịch nào</div>`; return; }
+function renderFilters() {
+  const opts = [["user", "", "Tất cả"], ...Object.entries(USERS).map(([e, n]) => ["user", e, n]), null,
+                ["type", "", "Thu & chi"], ["type", "expense", "Chi"], ["type", "income", "Thu"]];
+  $("filters").innerHTML = opts.map((o) => o ? `<button class="chip ${filter[o[0]] === o[1] ? "on" : ""}" data-k="${o[0]}" data-v="${esc(o[1])}">${esc(o[2])}</button>` : `<span class="sep"></span>`).join("");
+}
+$("filters").onclick = (e) => {
+  const b = e.target.closest(".chip"); if (!b) return;
+  filter[b.dataset.k] = b.dataset.v; renderFilters(); renderList();
+};
+$("q").oninput = (e) => { filter.q = plain(e.target.value.trim()); renderList(); };
 
-  const byDay = {};
-  for (const x of shown) (byDay[x.date] ||= []).push(x);
-  $("list").innerHTML = Object.entries(byDay).map(([day, arr]) => {
-    const [y, m, d] = day.split("-");
-    return `<div class="day">${d}/${m}/${y}</div><div class="card" style="margin:0;padding:0 14px">` +
-      arr.map((x) => `<div class="tx" data-id="${x.id}">
-        <div><div>${esc(x.category)}${x.note ? " · " + esc(x.note) : ""}</div><div class="meta">${esc(nameOf(x.createdBy))}</div></div>
-        <b class="${x.type === "income" ? "inc" : "exp"}">${x.type === "income" ? "+" : "−"}${fmt(x.amount)}</b>
-      </div>`).join("") + `</div>`;
+function renderList() {
+  renderFilters();
+  const shown = month.filter((x) => (!filter.user || x.createdBy === filter.user) && (!filter.type || x.type === filter.type)
+    && (!filter.q || plain(x.category + " " + x.note).includes(filter.q)));
+  if (!shown.length) {
+    const filtered = filter.user || filter.type || filter.q;
+    $("list").innerHTML = `<div class="empty"><span class="em">${filtered ? "🔍" : "🐷"}</span>${filtered ? "Không có giao dịch phù hợp" : "Tháng này chưa có giao dịch nào.<br>Bấm <b>+</b> để thêm khoản đầu tiên."}</div>`;
+    return;
+  }
+  const today = ymd(new Date()), yest = ymd(new Date(Date.now() - 864e5));
+  const byDay = new Map();
+  for (const x of shown) { if (!byDay.has(x.date)) byDay.set(x.date, []); byDay.get(x.date).push(x); }
+  $("list").innerHTML = [...byDay].map(([day, arr]) => {
+    const [y, m, d] = day.split("-").map(Number);
+    const label = day === today ? "Hôm nay" : day === yest ? "Hôm qua" : `${WEEKDAYS[new Date(y, m - 1, d).getDay()]}, ${d}/${m}`;
+    const dExp = sum(arr, "expense"), dInc = sum(arr, "income");
+    const tot = [dInc ? `+${fmt(dInc)}` : "", dExp ? `−${fmt(dExp)}` : ""].filter(Boolean).join(" · ");
+    return `<div class="day"><span>${label}</span><span class="num">${tot}</span></div><div class="group">` +
+      arr.map((x) => `<button class="tx" data-id="${x.id}">
+        <div class="icon">${iconOf(x.type, x.category)}</div>
+        <div class="body">
+          <div class="title">${esc(x.note || x.category)}</div>
+          <div class="meta"><span class="avatar sm">${esc(initial(x.createdBy))}</span>${esc(nameOf(x.createdBy))}${x.note ? " · " + esc(x.category) : ""}</div>
+        </div>
+        <div class="amt num ${x.type === "income" ? "inc" : "exp"}">${x.type === "income" ? "+" : "−"}${fmt(x.amount)}</div>
+      </button>`).join("") + `</div>`;
   }).join("");
 }
-const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-
 $("list").onclick = (e) => {
   const row = e.target.closest(".tx");
-  if (row) openForm(items.find((x) => x.id === row.dataset.id));
+  if (row) openForm(all.find((x) => x.id === row.dataset.id));
 };
 
-// ---- Form thêm / sửa ----
+// ---------- Tab Thống kê ----------
+function renderStats() {
+  const exp = sum(month, "expense");
+  const prevKey = ym(new Date(cur.getFullYear(), cur.getMonth() - 1, 1));
+  const prevExp = sum(all.filter((x) => x.date.startsWith(prevKey)), "expense");
+  $("kExp").textContent = fmt(exp);
+  $("kExpDelta").textContent = prevExp
+    ? `${exp >= prevExp ? "▲" : "▼"} ${Math.abs(Math.round((exp / prevExp - 1) * 100))}% so với tháng ${+prevKey.slice(5)}`
+    : "Tháng trước chưa có dữ liệu";
+  const now = new Date();
+  const days = ym(now) === ym(cur) ? now.getDate() : new Date(cur.getFullYear(), cur.getMonth() + 1, 0).getDate();
+  $("kAvg").textContent = fmt(Math.round(exp / days));
+  $("kAvgNote").textContent = `Tính trên ${days} ngày`;
+
+  // Theo danh mục
+  const byCat = {};
+  for (const x of month) if (x.type === catType) byCat[x.category] = (byCat[x.category] || 0) + x.amount;
+  const cats = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
+  const catTotal = cats.reduce((s, [, v]) => s + v, 0);
+  $("catBars").innerHTML = cats.length ? cats.map(([c, v]) => `<div class="bar-row">
+      <div class="lbl"><span>${iconOf(catType, c)}</span><span class="name">${esc(c)}</span><span class="val num">${fmt(v)}</span><span class="pct num">${Math.round(v / catTotal * 100)}%</span></div>
+      <div class="track"><div class="fill ${catType === "income" ? "inc" : "exp"}" style="width:${v / cats[0][1] * 100}%"></div></div>
+    </div>`).join("") : `<div class="muted small">Chưa có khoản ${catType === "income" ? "thu" : "chi"} nào trong tháng.</div>`;
+
+  // Mỗi người
+  const people = Object.entries(USERS).map(([e, n]) => ({ n, inc: sum(month.filter((x) => x.createdBy === e), "income"), exp: sum(month.filter((x) => x.createdBy === e), "expense") }));
+  const pMax = Math.max(1, ...people.flatMap((p) => [p.inc, p.exp]));
+  $("userBars").innerHTML = people.map((p) => `<div class="bar-row">
+      <div class="lbl"><span class="name"><b>${esc(p.n)}</b></span></div>
+      <div class="lbl small"><span class="name muted"><span class="dot exp"></span>Chi</span><span class="val num">${fmt(p.exp)}</span></div>
+      <div class="track" style="margin-bottom:8px"><div class="fill exp" style="width:${p.exp / pMax * 100}%"></div></div>
+      <div class="lbl small"><span class="name muted"><span class="dot inc"></span>Thu</span><span class="val num">${fmt(p.inc)}</span></div>
+      <div class="track"><div class="fill inc" style="width:${p.inc / pMax * 100}%"></div></div>
+    </div>`).join("");
+
+  // 6 tháng
+  const months = Array.from({ length: 6 }, (_, i) => new Date(cur.getFullYear(), cur.getMonth() - 5 + i, 1));
+  const data = months.map((d) => { const k = ym(d), arr = all.filter((x) => x.date.startsWith(k)); return { k, d, inc: sum(arr, "income"), exp: sum(arr, "expense") }; });
+  const max = Math.max(1, ...data.flatMap((m) => [m.inc, m.exp]));
+  const sel = trendSel ?? data.length - 1;
+  $("trend").innerHTML = data.map((m, i) => `<button class="m ${i === sel ? "sel" : ""}" data-i="${i}" aria-label="Tháng ${m.d.getMonth() + 1}">
+      <div class="b inc" style="height:${m.inc / max * 100}%"></div><div class="b exp" style="height:${m.exp / max * 100}%"></div></button>`).join("");
+  $("trendX").innerHTML = data.map((m, i) => `<span class="${i === sel ? "sel" : ""}">T${m.d.getMonth() + 1}</span>`).join("");
+  const s = data[sel];
+  $("trendTip").innerHTML = `<b>Tháng ${s.d.getMonth() + 1}/${s.d.getFullYear()}</b><span><span class="dot inc"></span>${fmt(s.inc)}</span><span><span class="dot exp"></span>${fmt(s.exp)}</span>`;
+}
+$("trend").onclick = (e) => { const b = e.target.closest(".m"); if (b) { trendSel = +b.dataset.i; renderStats(); } };
+$("catSeg").onclick = (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  catType = b.dataset.type;
+  for (const x of $("catSeg").children) x.classList.toggle("on", x === b);
+  renderStats();
+};
+
+for (const t of document.querySelectorAll(".tab")) t.onclick = () => {
+  tab = t.dataset.tab;
+  for (const x of document.querySelectorAll(".tab")) x.classList.toggle("on", x === t);
+  $("tab-list").classList.toggle("hidden", tab !== "list");
+  $("tab-stats").classList.toggle("hidden", tab !== "stats");
+  scrollTo(0, 0); render();
+};
+
+// ---------- Form thêm / sửa ----------
 function setType(t) {
   formType = t;
-  document.querySelectorAll(".seg button").forEach((b) => {
-    b.classList.toggle("on", b.dataset.type === t);
-    b.classList.toggle("exp-on", b.dataset.type === "expense");
-    b.classList.toggle("inc-on", b.dataset.type === "income");
-  });
-  $("category").innerHTML = CATEGORIES[t].map((c) => `<option>${esc(c)}</option>`).join("");
+  for (const b of $("typeSeg").children) b.classList.toggle("on", b.dataset.type === t);
+  if (!CATEGORIES[t].some(([n]) => n === formCat)) formCat = CATEGORIES[t][0][0];
+  renderCats();
 }
-document.querySelectorAll(".seg button").forEach((b) => (b.onclick = () => setType(b.dataset.type)));
+function renderCats() {
+  const list = [...CATEGORIES[formType]];
+  if (!list.some(([n]) => n === formCat)) list.push([formCat, "📌"]); // danh mục cũ đã bị đổi tên
+  $("catGrid").innerHTML = list.map(([n, ic]) => `<button type="button" class="cat ${n === formCat ? "on" : ""}" data-cat="${esc(n)}"><span>${ic}</span>${esc(n)}</button>`).join("");
+}
+$("typeSeg").onclick = (e) => { const b = e.target.closest("button"); if (b) setType(b.dataset.type); };
+$("catGrid").onclick = (e) => { const b = e.target.closest(".cat"); if (b) { formCat = b.dataset.cat; renderCats(); } };
+
+const getAmount = () => parseInt($("amount").value.replace(/\D/g, ""), 10) || 0;
+function setAmount(n) {
+  $("amount").value = n ? n.toLocaleString("vi-VN") : "";
+  $("amountWords").textContent = n >= 1000 ? "≈ " + fmtShort(n) : "";
+}
+$("amount").oninput = () => setAmount(Math.min(getAmount(), 999999999999));
+$("quick").onclick = (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.add) setAmount(Math.min((getAmount() || 1) * 1000, 999999999999));
+  else setAmount(+b.dataset.set);
+};
+
+function setDate(v) {
+  $("date").value = v;
+  const today = ymd(new Date()), yest = ymd(new Date(Date.now() - 864e5));
+  for (const b of document.querySelectorAll(".day-chips button"))
+    b.classList.toggle("on", (b.dataset.day === "0" && v === today) || (b.dataset.day === "-1" && v === yest));
+}
+document.querySelector(".day-chips").onclick = (e) => {
+  const b = e.target.closest("button"); if (b) setDate(ymd(new Date(Date.now() + +b.dataset.day * 864e5)));
+};
+$("date").onchange = () => setDate($("date").value);
 
 function openForm(tx = null) {
   editing = tx;
   $("formErr").textContent = "";
   $("formTitle").textContent = tx ? "Sửa giao dịch" : "Thêm giao dịch";
   $("delete").classList.toggle("hidden", !tx);
+  formCat = tx?.category ?? null;
   setType(tx?.type || "expense");
-  $("amount").value = tx ? tx.amount.toLocaleString("vi-VN") : "";
-  if (tx) $("category").value = tx.category;
-  $("date").value = tx?.date || ymd(new Date());
+  setAmount(tx?.amount || 0);
+  // Thêm mới khi đang xem tháng khác: mặc định ngày 1 của tháng đó
+  setDate(tx?.date || (ym(cur) === ym(new Date()) ? ymd(new Date()) : ymd(cur)));
   $("note").value = tx?.note || "";
-  $("sheet").classList.remove("hidden");
-  if (!tx) setTimeout(() => $("amount").focus(), 50);
+  $("stamp").textContent = tx ? `Thêm bởi ${nameOf(tx.createdBy)}` + (tx.createdAt ? ` · ${tx.createdAt.toDate().toLocaleString("vi-VN", { dateStyle: "short", timeStyle: "short" })}` : "") : "";
+  openSheet("txSheet");
+  if (!tx) setTimeout(() => $("amount").focus(), 320);
 }
-const closeForm = () => $("sheet").classList.add("hidden");
 $("addBtn").onclick = () => openForm();
-$("cancel").onclick = closeForm;
-$("sheet").onclick = (e) => { if (e.target.id === "sheet") closeForm(); };
-
-$("amount").oninput = (e) => {
-  const n = parseInt(e.target.value.replace(/\D/g, ""), 10);
-  e.target.value = isNaN(n) ? "" : n.toLocaleString("vi-VN");
-};
 
 $("txForm").onsubmit = async (e) => {
   e.preventDefault();
-  const amount = parseInt($("amount").value.replace(/\D/g, ""), 10);
-  if (!amount) { $("formErr").textContent = "Nhập số tiền."; return; }
-  const data = { type: formType, amount, category: $("category").value, date: $("date").value, note: $("note").value.trim() };
-  closeForm();
+  const amount = getAmount();
+  if (!amount) { $("formErr").textContent = "Nhập số tiền."; $("amount").focus(); return; }
+  if (!$("date").value) { $("formErr").textContent = "Chọn ngày."; return; }
+  const data = { type: formType, amount, category: formCat, date: $("date").value, note: $("note").value.trim() };
+  const wasEditing = editing;
+  closeSheet("txSheet");
   try {
-    if (editing) await updateDoc(doc(db, "transactions", editing.id), { ...data, updatedAt: serverTimestamp() });
-    else await addDoc(txCol, { ...data, createdBy: auth.currentUser.email, createdAt: serverTimestamp() });
+    // Không chờ server: Firestore ghi vào bộ nhớ máy trước rồi tự đồng bộ (kể cả khi offline)
+    const p = wasEditing
+      ? updateDoc(doc(db, "transactions", wasEditing.id), { ...data, updatedAt: serverTimestamp() })
+      : addDoc(txCol, { ...data, createdBy: auth.currentUser.email, createdAt: serverTimestamp() });
+    toast(wasEditing ? "Đã cập nhật" : `Đã thêm ${data.type === "income" ? "+" : "−"}${fmt(amount)}`);
+    if (!data.date.startsWith(ym(cur))) {
+      const [y, m] = data.date.split("-").map(Number);
+      cur = new Date(y, m - 1, 1); subscribe();
+    }
+    await p;
   } catch (err) { alert("Không lưu được: " + err.code); }
 };
 
 $("delete").onclick = async () => {
   if (!editing || !confirm("Xóa giao dịch này?")) return;
-  closeForm();
-  try { await deleteDoc(doc(db, "transactions", editing.id)); } catch (err) { alert("Không xóa được: " + err.code); }
+  const id = editing.id;
+  closeSheet("txSheet");
+  try { const p = deleteDoc(doc(db, "transactions", id)); toast("Đã xóa"); await p; }
+  catch (err) { alert("Không xóa được: " + err.code); }
 };
+
+// ---------- Xuất CSV (mở được bằng Excel / Numbers / Google Sheets) ----------
+async function exportCsv(rows, filename) {
+  if (!rows.length) { toast("Không có dữ liệu để xuất"); return; }
+  const cell = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const lines = [["Ngày", "Loại", "Danh mục", "Số tiền", "Ghi chú", "Người nhập"].map(cell).join(",")]
+    .concat([...rows].sort((a, b) => a.date.localeCompare(b.date)).map((x) =>
+      [x.date.split("-").reverse().join("/"), x.type === "income" ? "Thu" : "Chi", x.category,
+       x.type === "income" ? x.amount : -x.amount, x.note, nameOf(x.createdBy)].map(cell).join(",")));
+  const file = new File(["﻿" + lines.join("\r\n")], filename, { type: "text/csv" });
+  if (navigator.canShare?.({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: filename }); } catch {}
+  } else {
+    const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(file), download: filename });
+    a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+}
+$("exportMonth").onclick = () => exportCsv(month, `thu-chi-${ym(cur)}.csv`);
+$("exportAll").onclick = () => exportCsv(all, `thu-chi-6-thang-den-${ym(cur)}.csv`);
 </script>
 </body>
 </html>
