@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#14b8a6"/>
+      <stop offset="1" stop-color="#0f766e"/>
+    </linearGradient>
+    <radialGradient id="head" cx="0.42" cy="0.35" r="0.75">
+      <stop offset="0" stop-color="#fde2ee"/>
+      <stop offset="1" stop-color="#f9a8cb"/>
+    </radialGradient>
+    <radialGradient id="coin" cx="0.38" cy="0.32" r="0.8">
+      <stop offset="0" stop-color="#fff3b0"/>
+      <stop offset="0.45" stop-color="#fcd34d"/>
+      <stop offset="1" stop-color="#f59e0b"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="512" height="512" fill="url(#bg)"/>
+
+  <!-- Tai -->
+  <path d="M120 175 Q 98 78 168 92 Q 200 104 214 140 Z" fill="#f9a8cb"/>
+  <path d="M138 160 Q 126 104 168 112 Q 188 120 196 142 Z" fill="#f472b6"/>
+  <path d="M392 175 Q 414 78 344 92 Q 312 104 298 140 Z" fill="#f9a8cb"/>
+  <path d="M374 160 Q 386 104 344 112 Q 324 120 316 142 Z" fill="#f472b6"/>
+
+  <!-- Đầu -->
+  <ellipse cx="256" cy="262" rx="168" ry="152" fill="url(#head)"/>
+
+  <!-- Má hồng -->
+  <ellipse cx="160" cy="300" rx="30" ry="18" fill="#f472b6" opacity=".45"/>
+  <ellipse cx="352" cy="300" rx="30" ry="18" fill="#f472b6" opacity=".45"/>
+
+  <!-- Mắt -->
+  <ellipse cx="190" cy="222" rx="17" ry="20" fill="#3f1d2e"/>
+  <ellipse cx="322" cy="222" rx="17" ry="20" fill="#3f1d2e"/>
+  <circle cx="196" cy="214" r="6" fill="#fff"/>
+  <circle cx="328" cy="214" r="6" fill="#fff"/>
+
+  <!-- Mũi -->
+  <ellipse cx="256" cy="282" rx="66" ry="46" fill="#f472b6"/>
+  <ellipse cx="256" cy="276" rx="58" ry="36" fill="#f68dc4"/>
+  <ellipse cx="234" cy="282" rx="11" ry="16" fill="#9d174d"/>
+  <ellipse cx="278" cy="282" rx="11" ry="16" fill="#9d174d"/>
+
+  <!-- Đồng xu vàng ngậm ở miệng -->
+  <g transform="rotate(-8 256 392)">
+    <circle cx="256" cy="392" r="70" fill="#d97706"/>
+    <circle cx="256" cy="386" r="70" fill="url(#coin)"/>
+    <circle cx="256" cy="386" r="54" fill="none" stroke="#d97706" stroke-width="6" opacity=".7"/>
+    <text x="256" y="414" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="80" fill="#b45309">đ</text>
+    <path d="M214 344 Q 236 330 262 332" stroke="#fff" stroke-width="7" stroke-linecap="round" fill="none" opacity=".7"/>
+  </g>
+
+  <!-- Môi kẹp đồng xu -->
+  <path d="M176 338 Q 194 352 206 340" stroke="#db2777" stroke-width="8" stroke-linecap="round" fill="none"/>
+  <path d="M336 338 Q 318 352 306 340" stroke="#db2777" stroke-width="8" stroke-linecap="round" fill="none"/>
+</svg>
