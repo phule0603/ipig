@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Thu Chi">
+<meta name="theme-color" content="#0f766e">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Thu Chi</title>
+<style>
+  :root {
+    --bg: #f4f5f7; --card: #fff; --text: #111827; --muted: #6b7280; --line: #e5e7eb;
+    --primary: #0f766e; --income: #15803d; --expense: #dc2626;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0b0f14; --card: #161b22; --text: #e6edf3; --muted: #8b949e; --line: #2a313c;
+            --primary: #2dd4bf; --income: #4ade80; --expense: #f87171; }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text);
+         padding: env(safe-area-inset-top) 16px calc(env(safe-area-inset-bottom) + 90px); }
+  h1 { font-size: 22px; margin: 16px 0 8px; display: flex; justify-content: space-between; align-items: center; }
+  .card { background: var(--card); border-radius: 14px; padding: 14px; margin: 12px 0; }
+  .hidden { display: none !important; }
+  input, select, textarea, button { font: inherit; font-size: 16px; color: var(--text); }
+  input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+  label { display: block; font-size: 13px; color: var(--muted); margin: 10px 0 4px; }
+  button { border: 0; border-radius: 10px; padding: 12px 16px; background: var(--primary); color: #fff; font-weight: 600; }
+  button.ghost { background: transparent; color: var(--primary); padding: 6px 8px; }
+  button.danger { background: var(--expense); }
+  .row { display: flex; gap: 8px; align-items: center; }
+  .row > * { flex: 1; }
+  .month { display: flex; align-items: center; justify-content: space-between; }
+  .month strong { font-size: 18px; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; text-align: center; }
+  .stats small { color: var(--muted); display: block; font-size: 12px; }
+  .stats b { font-size: 15px; }
+  .inc { color: var(--income); } .exp { color: var(--expense); }
+  .who { font-size: 13px; color: var(--muted); margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
+  .day { font-size: 13px; color: var(--muted); margin: 16px 4px 4px; }
+  .tx { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .tx:last-child { border-bottom: 0; }
+  .tx .meta { font-size: 12px; color: var(--muted); }
+  .tx b { white-space: nowrap; margin-left: 8px; }
+  .fab { position: fixed; right: 20px; bottom: calc(env(safe-area-inset-bottom) + 20px); width: 60px; height: 60px;
+         border-radius: 30px; font-size: 32px; padding: 0; box-shadow: 0 4px 14px rgba(0,0,0,.25); }
+  .sheet { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: flex; align-items: flex-end; z-index: 10; }
+  .sheet .card { width: 100%; margin: 0; border-radius: 18px 18px 0 0; padding-bottom: calc(env(safe-area-inset-bottom) + 16px); max-height: 92vh; overflow: auto; }
+  .seg { display: flex; background: var(--bg); border-radius: 10px; padding: 3px; }
+  .seg button { flex: 1; background: transparent; color: var(--muted); padding: 9px; }
+  .seg button.on.exp-on { background: var(--expense); color: #fff; }
+  .seg button.on.inc-on { background: var(--income); color: #fff; }
+  .empty { text-align: center; color: var(--muted); padding: 24px 0; }
+  .err { color: var(--expense); font-size: 14px; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<!-- Đăng nhập -->
+<section id="login" class="hidden">
+  <h1>Thu Chi</h1>
+  <form class="card" id="loginForm">
+    <label>Email</label>
+    <input id="email" type="email" autocomplete="username" required>
+    <label>Mật khẩu</label>
+    <input id="password" type="password" autocomplete="current-password" required>
+    <div style="height:14px"></div>
+    <button type="submit" style="width:100%">Đăng nhập</button>
+    <div id="loginErr" class="err"></div>
+  </form>
+</section>
+
+<!-- Màn hình chính -->
+<section id="main" class="hidden">
+  <h1><span>Thu Chi</span><button class="ghost" id="logout">Đăng xuất</button></h1>
+
+  <div class="card">
+    <div class="month">
+      <button class="ghost" id="prev">‹</button>
+      <strong id="monthLabel"></strong>
+      <button class="ghost" id="next">›</button>
+    </div>
+    <div class="stats" style="margin-top:10px">
+      <div><small>Thu</small><b class="inc" id="sumInc">0</b></div>
+      <div><small>Chi</small><b class="exp" id="sumExp">0</b></div>
+      <div><small>Còn lại</small><b id="sumBal">0</b></div>
+    </div>
+    <div class="who" id="byUser"></div>
+  </div>
+
+  <div class="row">
+    <select id="filterUser"><option value="">Tất cả mọi người</option></select>
+    <select id="filterType"><option value="">Thu & chi</option><option value="expense">Chỉ chi</option><option value="income">Chỉ thu</option></select>
+  </div>
+
+  <div id="list"></div>
+  <button class="fab" id="addBtn" aria-label="Thêm">+</button>
+</section>
+
+<!-- Form thêm / sửa -->
+<div class="sheet hidden" id="sheet">
+  <form class="card" id="txForm">
+    <div class="row" style="margin-bottom:6px">
+      <strong id="formTitle">Thêm giao dịch</strong>
+      <button type="button" class="ghost" id="cancel" style="flex:0">Đóng</button>
+    </div>
+    <div class="seg">
+      <button type="button" data-type="expense">Chi</button>
+      <button type="button" data-type="income">Thu</button>
+    </div>
+    <label>Số tiền (đ)</label>
+    <input id="amount" inputmode="numeric" placeholder="0" required>
+    <label>Danh mục</label>
+    <select id="category"></select>
+    <label>Ngày</label>
+    <input id="date" type="date" required>
+    <label>Ghi chú</label>
+    <input id="note" placeholder="Không bắt buộc">
+    <div style="height:14px"></div>
+    <div class="row">
+      <button type="button" class="danger hidden" id="delete">Xóa</button>
+      <button type="submit">Lưu</button>
+    </div>
+    <div id="formErr" class="err"></div>
+  </form>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { initializeFirestore, persistentLocalCache, collection, query, where, orderBy, onSnapshot,
+         addDoc, updateDoc, deleteDoc, doc, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { firebaseConfig, USERS, CATEGORIES } from "./config.js";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+await setPersistence(auth, browserLocalPersistence);
+const db = initializeFirestore(app, { localCache: persistentLocalCache() });
+const txCol = collection(db, "transactions");
+
+const $ = (id) => document.getElementById(id);
+const fmt = (n) => n.toLocaleString("vi-VN") + "đ";
+const pad = (n) => String(n).padStart(2, "0");
+const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const nameOf = (email) => USERS[email] || email;
+
+let cur = new Date(); cur.setDate(1);
+let unsub = null, items = [], editing = null, formType = "expense";
+
+for (const [email, name] of Object.entries(USERS)) $("filterUser").add(new Option(name, email));
+
+// ---- Đăng nhập ----
+onAuthStateChanged(auth, (user) => {
+  $("login").classList.toggle("hidden", !!user);
+  $("main").classList.toggle("hidden", !user);
+  if (user) subscribe(); else if (unsub) { unsub(); unsub = null; }
+});
+
+$("loginForm").onsubmit = async (e) => {
+  e.preventDefault(); $("loginErr").textContent = "";
+  try { await signInWithEmailAndPassword(auth, $("email").value.trim(), $("password").value); }
+  catch { $("loginErr").textContent = "Sai email hoặc mật khẩu."; }
+};
+$("logout").onclick = () => signOut(auth);
+
+// ---- Dữ liệu theo tháng (đồng bộ realtime giữa 2 máy) ----
+function subscribe() {
+  if (unsub) unsub();
+  const start = ymd(cur);
+  const end = ymd(new Date(cur.getFullYear(), cur.getMonth() + 1, 0));
+  $("monthLabel").textContent = `Tháng ${cur.getMonth() + 1}/${cur.getFullYear()}`;
+  const q = query(txCol, where("date", ">=", start), where("date", "<=", end), orderBy("date", "desc"));
+  unsub = onSnapshot(q, (snap) => {
+    items = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    render();
+  }, (err) => { $("list").innerHTML = `<div class="card err">Lỗi tải dữ liệu: ${err.code}</div>`; });
+}
+$("prev").onclick = () => { cur.setMonth(cur.getMonth() - 1); subscribe(); };
+$("next").onclick = () => { cur.setMonth(cur.getMonth() + 1); subscribe(); };
+$("filterUser").onchange = $("filterType").onchange = () => render();
+
+function render() {
+  const sum = (arr, t) => arr.filter((x) => x.type === t).reduce((s, x) => s + x.amount, 0);
+  const inc = sum(items, "income"), exp = sum(items, "expense");
+  $("sumInc").textContent = fmt(inc);
+  $("sumExp").textContent = fmt(exp);
+  $("sumBal").textContent = fmt(inc - exp);
+  $("byUser").innerHTML = Object.entries(USERS).map(([email, name]) => {
+    const mine = items.filter((x) => x.createdBy === email);
+    return `${name}: thu <span class="inc">${fmt(sum(mine, "income"))}</span> · chi <span class="exp">${fmt(sum(mine, "expense"))}</span>`;
+  }).join("<br>");
+
+  const fu = $("filterUser").value, ft = $("filterType").value;
+  const shown = items.filter((x) => (!fu || x.createdBy === fu) && (!ft || x.type === ft));
+  if (!shown.length) { $("list").innerHTML = `<div class="card empty">Chưa có giao dịch nào</div>`; return; }
+
+  const byDay = {};
+  for (const x of shown) (byDay[x.date] ||= []).push(x);
+  $("list").innerHTML = Object.entries(byDay).map(([day, arr]) => {
+    const [y, m, d] = day.split("-");
+    return `<div class="day">${d}/${m}/${y}</div><div class="card" style="margin:0;padding:0 14px">` +
+      arr.map((x) => `<div class="tx" data-id="${x.id}">
+        <div><div>${esc(x.category)}${x.note ? " · " + esc(x.note) : ""}</div><div class="meta">${esc(nameOf(x.createdBy))}</div></div>
+        <b class="${x.type === "income" ? "inc" : "exp"}">${x.type === "income" ? "+" : "−"}${fmt(x.amount)}</b>
+      </div>`).join("") + `</div>`;
+  }).join("");
+}
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+$("list").onclick = (e) => {
+  const row = e.target.closest(".tx");
+  if (row) openForm(items.find((x) => x.id === row.dataset.id));
+};
+
+// ---- Form thêm / sửa ----
+function setType(t) {
+  formType = t;
+  document.querySelectorAll(".seg button").forEach((b) => {
+    b.classList.toggle("on", b.dataset.type === t);
+    b.classList.toggle("exp-on", b.dataset.type === "expense");
+    b.classList.toggle("inc-on", b.dataset.type === "income");
+  });
+  $("category").innerHTML = CATEGORIES[t].map((c) => `<option>${esc(c)}</option>`).join("");
+}
+document.querySelectorAll(".seg button").forEach((b) => (b.onclick = () => setType(b.dataset.type)));
+
+function openForm(tx = null) {
+  editing = tx;
+  $("formErr").textContent = "";
+  $("formTitle").textContent = tx ? "Sửa giao dịch" : "Thêm giao dịch";
+  $("delete").classList.toggle("hidden", !tx);
+  setType(tx?.type || "expense");
+  $("amount").value = tx ? tx.amount.toLocaleString("vi-VN") : "";
+  if (tx) $("category").value = tx.category;
+  $("date").value = tx?.date || ymd(new Date());
+  $("note").value = tx?.note || "";
+  $("sheet").classList.remove("hidden");
+  if (!tx) setTimeout(() => $("amount").focus(), 50);
+}
+const closeForm = () => $("sheet").classList.add("hidden");
+$("addBtn").onclick = () => openForm();
+$("cancel").onclick = closeForm;
+$("sheet").onclick = (e) => { if (e.target.id === "sheet") closeForm(); };
+
+$("amount").oninput = (e) => {
+  const n = parseInt(e.target.value.replace(/\D/g, ""), 10);
+  e.target.value = isNaN(n) ? "" : n.toLocaleString("vi-VN");
+};
+
+$("txForm").onsubmit = async (e) => {
+  e.preventDefault();
+  const amount = parseInt($("amount").value.replace(/\D/g, ""), 10);
+  if (!amount) { $("formErr").textContent = "Nhập số tiền."; return; }
+  const data = { type: formType, amount, category: $("category").value, date: $("date").value, note: $("note").value.trim() };
+  closeForm();
+  try {
+    if (editing) await updateDoc(doc(db, "transactions", editing.id), { ...data, updatedAt: serverTimestamp() });
+    else await addDoc(txCol, { ...data, createdBy: auth.currentUser.email, createdAt: serverTimestamp() });
+  } catch (err) { alert("Không lưu được: " + err.code); }
+};
+
+$("delete").onclick = async () => {
+  if (!editing || !confirm("Xóa giao dịch này?")) return;
+  closeForm();
+  try { await deleteDoc(doc(db, "transactions", editing.id)); } catch (err) { alert("Không xóa được: " + err.code); }
+};
+</script>
+</body>
+</html>

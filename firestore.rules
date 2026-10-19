@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Chỉ 2 email này được đọc/ghi. Sửa lại cho trùng với config.js
+    function isMember() {
+      return request.auth != null
+        && request.auth.token.email in ['nguoi1@example.com', 'nguoi2@example.com'];
+    }
+
+    function validTx(d) {
+      return d.type in ['income', 'expense']
+        && d.amount is int && d.amount > 0
+        && d.date is string && d.date.size() == 10
+        && d.category is string;
+    }
+
+    match /transactions/{id} {
+      allow read: if isMember();
+      allow create: if isMember() && validTx(request.resource.data)
+                    && request.resource.data.createdBy == request.auth.token.email;
+      allow update: if isMember() && validTx(request.resource.data)
+                    && request.resource.data.createdBy == resource.data.createdBy;
+      allow delete: if isMember();
+    }
+  }
+}
