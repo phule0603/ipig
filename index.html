@@ -222,8 +222,8 @@
   <p>Sổ thu chi chung của hai bạn</p>
   <form id="loginForm">
     <div class="field login">
-      <label class="line"><span>Email</span><input id="email" type="email" autocomplete="username" placeholder="ten@gmail.com" required></label>
-      <label class="line"><span>Mật khẩu</span><input id="password" type="password" autocomplete="current-password" placeholder="••••••" required></label>
+      <label class="line"><span>Email</span><input id="email" name="email" type="email" autocomplete="username" placeholder="ten@gmail.com" required></label>
+      <label class="line"><span>Mật khẩu</span><input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••" required></label>
     </div>
     <button type="submit" class="btn" id="loginBtn">Đăng nhập</button>
     <div id="loginErr" class="err"></div>
@@ -438,16 +438,25 @@ onAuthStateChanged(auth, (user) => {
   } else if (unsub) { unsub(); unsub = null; }
 });
 
+// Phiên đăng nhập được Firebase lưu trên máy nên chỉ phải đăng nhập lần đầu.
+// Ghi nhớ thêm email để điền sẵn nếu lỡ đăng xuất; mật khẩu để iPhone (Keychain) tự lưu và điền.
+try { $("email").value = localStorage.getItem("lastEmail") || ""; } catch {}
 $("loginForm").onsubmit = async (e) => {
   e.preventDefault(); $("loginErr").textContent = ""; $("loginBtn").disabled = true;
-  try { await signInWithEmailAndPassword(auth, $("email").value.trim(), $("password").value); }
+  try {
+    await signInWithEmailAndPassword(auth, $("email").value.trim(), $("password").value);
+    try { localStorage.setItem("lastEmail", $("email").value.trim()); } catch {}
+  }
   catch (err) {
     $("loginErr").textContent = err.code === "auth/network-request-failed" ? "Không có mạng, thử lại sau." : "Sai email hoặc mật khẩu.";
   }
   $("loginBtn").disabled = false;
 };
 $("meBtn").onclick = () => openSheet("meSheet");
-$("logout").onclick = () => { closeSheet("meSheet"); signOut(auth); };
+$("logout").onclick = () => {
+  if (!confirm("Đăng xuất? Lần sau mở app sẽ phải nhập lại mật khẩu.")) return;
+  closeSheet("meSheet"); signOut(auth);
+};
 
 // ---------- Dữ liệu: nghe 6 tháng tính đến tháng đang xem ----------
 function subscribe() {
