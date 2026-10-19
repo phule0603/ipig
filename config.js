@@ -1,11 +1,11 @@
 // 1) Dán cấu hình Firebase của bạn vào đây (Firebase Console > Project settings > Your apps > Web app)
 export const firebaseConfig = {
-  apiKey: "DAN_API_KEY_VAO_DAY",
-  authDomain: "ten-du-an.firebaseapp.com",
-  projectId: "ten-du-an",
-  storageBucket: "ten-du-an.appspot.com",
-  messagingSenderId: "000000000000",
-  appId: "1:000000000000:web:xxxxxxxxxxxxxx",
+  apiKey: "AIzaSyC2Z6z_LVQu-y-UdqXJP1nIie3H2HqIdps",
+  authDomain: "ipig-2fbae.firebaseapp.com",
+  projectId: "ipig-2fbae",
+  storageBucket: "ipig-2fbae.firebasestorage.app",
+  messagingSenderId: "696526861842",
+  appId: "1:696526861842:web:8a904260ecd1199d818acb",
 };
 
 // 2) Tên hiển thị cho 2 người dùng (email phải trùng với tài khoản tạo trong Firebase Auth)
