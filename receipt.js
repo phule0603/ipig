@@ -2,7 +2,7 @@
 // để điền sẵn form: số tiền, thu hay chi, ngày, ghi chú, đoán danh mục.
 
 const plain = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "")
-  .replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase();
+  .replace(/đ/g, "d").replace(/Đ/g, "D").replace(/₫/g, " d").toLowerCase();
 
 // Dòng có các chữ này thường là số dư / phí, không phải số tiền giao dịch
 const SKIP_LINE = /(so du|phi giao dich|phi chuyen|phi dich vu|\bphi\b|\bfee\b|balance|han muc|limit|so tai khoan|stk)/;
@@ -51,11 +51,19 @@ function findAmount(lines) {
       if (a) return a;
     }
   }
-  // 2) Số đầu tiên có đơn vị VND / đ, bỏ qua dòng số dư, phí
-  for (const l of lines) {
-    if (SKIP_LINE.test(plain(l))) continue;
-    const a = amountsIn(l).find((x) => x.hasUnit);
+  // 2) Số đầu tiên có đơn vị VND / đ (cùng dòng hoặc đơn vị nằm ở dòng kế), bỏ qua dòng số dư, phí
+  for (let i = 0; i < lines.length; i++) {
+    if (SKIP_LINE.test(plain(lines[i]))) continue;
+    const found = amountsIn(lines[i]);
+    const a = found.find((x) => x.hasUnit) ||
+      (found.length && /^(vnd|vnd\.|d|dong)$/.test(plain(lines[i + 1] || "").trim()) ? found[0] : null);
     if (a) return a;
+  }
+  // 3) Dòng chỉ có một con số có dấu phân cách hàng nghìn, ví dụ "-500.000"
+  for (let i = 0; i < lines.length; i++) {
+    if (SKIP_LINE.test(plain(lines[i])) || SKIP_LINE.test(plain(lines[i - 1] || ""))) continue;
+    const m = plain(lines[i]).trim().match(/^([+\-−]?)\s*(\d{1,3}(?:[.,  ]\d{3})+)(?:[.,]\d{1,2})?$/);
+    if (m) return { value: parseInt(m[2].replace(/\D/g, ""), 10), sign: m[1], hasUnit: false };
   }
   return null;
 }
@@ -120,5 +128,6 @@ export function parseReceipt(raw, categories) {
     date: findDate(text),
     note: note.slice(0, 120),
     category: guessCategory(type, `${content} ${party}`, categories),
+    text, // chữ gốc, hiện lại cho người dùng khi đọc sai
   };
 }

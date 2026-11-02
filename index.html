@@ -685,10 +685,20 @@ $("addBtn").onclick = () => openForm();
 // Phím tắt iPhone đọc chữ trên ảnh biên lai rồi mở  .../ipig/#ocr=<chữ đã mã hóa URL>.
 // Dùng phần # để nội dung biên lai không bị gửi lên máy chủ GitHub.
 function receiptHint(r) {
-  return r.amount
+  const msg = r.amount
     ? `📷 Đã đọc từ biên lai: <b>${fmt(r.amount)}</b>. Kiểm tra lại số tiền, danh mục rồi bấm Lưu.`
-    : "📷 Không tìm thấy số tiền trong biên lai, bạn nhập tay giúp nhé.";
+    : r.text.trim()
+      ? "📷 Không tìm thấy số tiền trong biên lai, bạn nhập tay giúp nhé."
+      : "📷 Phím tắt không gửi được chữ nào. Kiểm tra lại biến <b>Văn bản đã mã hóa URL</b> trong phím tắt.";
+  // Cho xem lại chữ đã đọc để báo lỗi khi đọc sai
+  return msg + (r.text.trim() ? `<details class="small" style="margin-top:6px"><summary>Xem chữ đã đọc được</summary>
+    <pre style="white-space:pre-wrap;margin:6px 0;font-size:12px;max-height:160px;overflow:auto">${esc(r.text)}</pre>
+    <button type="button" class="link small" data-copy>Sao chép để gửi báo lỗi</button></details>` : "");
 }
+$("formHint").addEventListener("click", async (e) => {
+  if (!e.target.closest("[data-copy]")) return;
+  try { await navigator.clipboard.writeText($("formHint").querySelector("pre").textContent); toast("Đã sao chép"); } catch {}
+});
 function openFromReceipt(text) {
   const r = parseReceipt(text, CATEGORIES);
   if (r.date && !r.date.startsWith(ym(cur))) { const [y, m] = r.date.split("-").map(Number); cur = new Date(y, m - 1, 1); subscribe(); }
