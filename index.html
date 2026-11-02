@@ -167,6 +167,8 @@
   .row-btns { display: flex; gap: 8px; margin-top: 16px; }
   .row-btns .btn.danger-text { flex: 0 0 30%; }
   .err { color: #dc2626; font-size: 14px; margin-top: 8px; text-align: center; }
+  .hint { background: var(--primary-soft); border-radius: 12px; padding: 10px 12px; margin: 12px 0 0; font-size: 14px; line-height: 1.4; }
+  .paste { display: block; margin: 10px auto 0; font-size: 14px; color: var(--primary); padding: 6px 10px; }
   .stamp { text-align: center; font-size: 12px; color: var(--muted); margin-top: 12px; }
 
   /* Form đăng nhập */
@@ -309,7 +311,8 @@
       <strong id="formTitle">Thêm giao dịch</strong>
       <button type="submit" class="link" style="font-weight:600">Lưu</button>
     </div>
-    <div class="seg" id="typeSeg">
+    <div id="formHint" class="hint hidden"></div>
+    <div class="seg" id="typeSeg" style="margin-top:12px">
       <button type="button" data-type="expense">Chi tiền</button>
       <button type="button" data-type="income">Thu tiền</button>
     </div>
@@ -339,6 +342,7 @@
       <label class="line"><span>Ghi chú</span><input id="note" placeholder="Không bắt buộc" maxlength="120" enterkeyhint="done"></label>
     </div>
 
+    <button type="button" class="paste" id="pasteBtn">📋 Dán chữ từ biên lai ngân hàng</button>
     <div class="row-btns">
       <button type="button" class="btn danger-text hidden" id="delete">Xóa</button>
       <button type="submit" class="btn" id="saveBtn">Lưu</button>
@@ -362,6 +366,9 @@
       <button id="exportAll"><span class="ic">🗂️</span><span>Xuất Excel (CSV) 6 tháng</span></button>
     </div>
     <div class="menu">
+      <button id="guideBtn"><span class="ic">📷</span><span>Cài phím tắt ghi từ biên lai ngân hàng</span></button>
+    </div>
+    <div class="menu">
       <button id="logout"><span class="ic">↩︎</span><span class="danger">Đăng xuất</span></button>
     </div>
     <div class="stamp">Thu Chi · dữ liệu đồng bộ qua Firebase</div>
@@ -378,6 +385,7 @@ import { initializeFirestore, persistentLocalCache, collection, query, where, or
          addDoc, updateDoc, deleteDoc, doc, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig, USERS, CATEGORIES } from "./config.js";
+import { parseReceipt } from "./receipt.js";
 
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 
@@ -426,6 +434,7 @@ let cur = new Date(); cur.setDate(1); cur.setHours(0, 0, 0, 0);
 let unsub = null, all = [], month = [], editing = null, formType = "expense", formCat = null;
 const filter = { user: "", type: "", q: "" };
 let tab = "list", catType = "expense", trendSel = null;
+let pendingReceipt = null; // chữ biên lai chờ đăng nhập xong mới mở form
 
 // ---------- Đăng nhập ----------
 onAuthStateChanged(auth, (user) => {
@@ -436,6 +445,7 @@ onAuthStateChanged(auth, (user) => {
     $("meName").textContent = nameOf(user.email);
     $("meEmail").textContent = user.email;
     subscribe();
+    openPendingReceipt();
   } else if (unsub) { unsub(); unsub = null; }
 });
 
@@ -652,22 +662,69 @@ document.querySelector(".day-chips").onclick = (e) => {
 };
 $("date").onchange = () => setDate($("date").value);
 
-function openForm(tx = null) {
+function openForm(tx = null, pre = {}) {
   editing = tx;
   $("formErr").textContent = "";
+  $("formHint").classList.add("hidden");
+  $("pasteBtn").classList.toggle("hidden", !!tx);
   $("formTitle").textContent = tx ? "Sửa giao dịch" : "Thêm giao dịch";
   $("delete").classList.toggle("hidden", !tx);
-  formCat = tx?.category ?? null;
-  setType(tx?.type || "expense");
-  setAmount(tx?.amount || 0);
+  formCat = tx?.category ?? (pre.category || null);
+  setType(tx?.type || pre.type || "expense");
+  setAmount(tx?.amount || pre.amount || 0);
   // Thêm mới khi đang xem tháng khác: mặc định ngày 1 của tháng đó
-  setDate(tx?.date || (ym(cur) === ym(new Date()) ? ymd(new Date()) : ymd(cur)));
-  $("note").value = tx?.note || "";
+  setDate(tx?.date || pre.date || (ym(cur) === ym(new Date()) ? ymd(new Date()) : ymd(cur)));
+  $("note").value = tx?.note || pre.note || "";
   $("stamp").textContent = tx ? `Thêm bởi ${nameOf(tx.createdBy)}` + (tx.createdAt ? ` · ${tx.createdAt.toDate().toLocaleString("vi-VN", { dateStyle: "short", timeStyle: "short" })}` : "") : "";
   openSheet("txSheet");
-  if (!tx) setTimeout(() => $("amount").focus(), 320);
+  if (!tx && !pre.amount) setTimeout(() => $("amount").focus(), 320);
 }
 $("addBtn").onclick = () => openForm();
+
+// ---------- Ghi từ biên lai ngân hàng ----------
+// Phím tắt iPhone đọc chữ trên ảnh biên lai rồi mở  .../ipig/#ocr=<chữ đã mã hóa URL>.
+// Dùng phần # để nội dung biên lai không bị gửi lên máy chủ GitHub.
+function receiptHint(r) {
+  return r.amount
+    ? `📷 Đã đọc từ biên lai: <b>${fmt(r.amount)}</b>. Kiểm tra lại số tiền, danh mục rồi bấm Lưu.`
+    : "📷 Không tìm thấy số tiền trong biên lai, bạn nhập tay giúp nhé.";
+}
+function openFromReceipt(text) {
+  const r = parseReceipt(text, CATEGORIES);
+  if (r.date && !r.date.startsWith(ym(cur))) { const [y, m] = r.date.split("-").map(Number); cur = new Date(y, m - 1, 1); subscribe(); }
+  openForm(null, r);
+  $("formHint").innerHTML = receiptHint(r);
+  $("formHint").classList.remove("hidden");
+}
+function readHash() {
+  const m = location.hash.match(/^#ocr=([\s\S]*)$/);
+  if (!m) return;
+  try { pendingReceipt = decodeURIComponent(m[1].replace(/\+/g, "%20")); } catch { pendingReceipt = m[1]; }
+  history.replaceState(null, "", location.pathname + location.search);
+  openPendingReceipt();
+}
+function openPendingReceipt() {
+  if (pendingReceipt === null || !auth.currentUser) return;
+  const text = pendingReceipt; pendingReceipt = null;
+  openFromReceipt(text);
+}
+addEventListener("hashchange", readHash);
+readHash();
+
+$("pasteBtn").onclick = async () => {
+  let text = "";
+  try { text = await navigator.clipboard.readText(); } catch {}
+  if (!text.trim()) { toast("Chưa có chữ nào được sao chép"); return; }
+  const r = parseReceipt(text, CATEGORIES);
+  if (r.category) formCat = r.category;
+  setType(r.type);
+  if (r.amount) setAmount(r.amount);
+  if (r.date) setDate(r.date);
+  if (r.note) $("note").value = r.note;
+  $("formHint").innerHTML = receiptHint(r);
+  $("formHint").classList.remove("hidden");
+};
+$("guideBtn").onclick = () => open("https://github.com/phule0603/ipig/blob/main/HUONG-DAN-PHIM-TAT.md", "_blank");
 
 $("txForm").onsubmit = async (e) => {
   e.preventDefault();

@@ -53,6 +53,8 @@ Developer, không phải cài lại sau 7 ngày.
 - Đổi tháng: mũi tên ‹ ›, vuốt ngang, hoặc bấm tên tháng để về tháng hiện tại.
 - Bấm avatar góc phải: xuất dữ liệu ra file CSV (mở bằng Excel / Numbers / Google Sheets), đăng xuất.
 - Mở được cả khi mất mạng; khoản nhập lúc offline tự đồng bộ khi có mạng.
+- **Ghi từ biên lai ngân hàng**: chia sẻ ảnh biên lai cho phím tắt iPhone, iPig tự điền số tiền, ngày, ghi chú, danh mục.
+  Cách cài: [HUONG-DAN-PHIM-TAT.md](HUONG-DAN-PHIM-TAT.md).
 - Danh mục và biểu tượng sửa trong `config.js`.
 
 ## Chạy thử trên máy tính
