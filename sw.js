@@ -1,6 +1,6 @@
 // Lưu sẵn giao diện app để mở được cả khi mất mạng.
 // Luôn thử tải bản mới từ mạng trước, mất mạng mới dùng bản đã lưu.
-const CACHE = "thuchi-v7";
+const CACHE = "thuchi-v8";
 const SHELL = ["./", "./index.html", "./config.js", "./receipt.js", "./manifest.webmanifest", "./icon-pig-180.png"];
 
 self.addEventListener("install", (e) => {

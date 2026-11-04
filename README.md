@@ -48,8 +48,11 @@ Developer, không phải cài lại sau 7 ngày.
 - **Sổ**: tổng thu / chi / còn lại của tháng, danh sách theo ngày. Tìm kiếm theo ghi chú (gõ không dấu cũng được),
   lọc theo người hoặc chỉ thu / chỉ chi. Bấm vào 1 dòng để sửa hoặc xóa.
 - **+**: nhập số tiền (nút `+000`, 20k, 50k… để nhập nhanh), chọn danh mục bằng biểu tượng, chọn Hôm nay / Hôm qua.
-- **Thống kê**: tổng chi so với tháng trước, trung bình mỗi ngày, chi theo danh mục, mỗi người thu/chi bao nhiêu,
-  biểu đồ 6 tháng (bấm vào cột để xem số).
+- **Thống kê**: chọn xem theo **Tháng** hoặc **Tuần**, và theo **Cả hai / từng người**.
+  - Thu, chi, còn lại, so với kỳ trước, chi trung bình mỗi ngày.
+  - **Tóm tắt**: danh mục chi nhiều nhất, khoản chi lớn nhất, ngày chi nhiều nhất, mỗi người chi bao nhiêu %, để dành được bao nhiêu.
+  - Biểu đồ theo tuần trong tháng / theo từng ngày trong tuần, chi theo thứ trong tuần, theo danh mục, 6 tháng gần nhất
+    (bấm vào cột để xem số).
 - Đổi tháng: mũi tên ‹ ›, vuốt ngang, hoặc bấm tên tháng để về tháng hiện tại.
 - Bấm avatar góc phải: xuất dữ liệu ra file CSV (mở bằng Excel / Numbers / Google Sheets), đăng xuất.
 - Mở được cả khi mất mạng; khoản nhập lúc offline tự đồng bộ khi có mạng.
